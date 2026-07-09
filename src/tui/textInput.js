@@ -9,18 +9,24 @@
 import readline from "node:readline";
 import { abort, hideCursor, showCursor } from "./keys.js";
 import { Renderer } from "./screen.js";
-import { color, symbol, line } from "./theme.js";
+import { color, symbol } from "./theme.js";
+import { helpPanel } from "./helpPanel.js";
 
 // question is the label shown before the input.
 // help is the deep configuration guidance for this credential.
 // defaultValue is used when the user submits an empty line.
 // optional allows an empty answer to be accepted as an intentional skip.
-export async function askText({ question, help = "", defaultValue = "", optional = false }) {
+// validate is an optional function that receives the value and returns an error
+// message when the value is not acceptable, or nothing when it is fine. The
+// error is shown live under the field and the value is never committed until it
+// passes, so rejected attempts never clutter the finished transcript.
+export async function askText({ question, help = "", defaultValue = "", optional = false, validate = null }) {
   return new Promise((resolve) => {
     const renderer = new Renderer();
     const stdin = process.stdin;
     let buffer = "";
     let showHelp = false;
+    let error = "";
 
     hideCursor();
     if (stdin.isTTY) stdin.setRawMode(true);
@@ -30,20 +36,23 @@ export async function askText({ question, help = "", defaultValue = "", optional
     const draw = () => {
       const lines = [];
       const hint = defaultValue
-        ? color.dim(` (default: ${defaultValue})`)
+        ? color.dim(` (Default: ${defaultValue})`)
         : optional
-          ? color.dim(" (optional, press Enter to skip)")
+          ? color.dim(" (Optional, Press Enter To Skip)")
           : "";
       lines.push(`${color.green(symbol.question)} ${color.bold(question)}${hint}`);
       // The typed value is shown live with a block cursor at the end.
       lines.push(`  ${color.cyan(symbol.pointer)} ${buffer}${color.gray("▌")}`);
+      // Any validation error sits directly under the field and clears itself as
+      // soon as the user edits the value.
+      if (error) lines.push(color.yellow(`  ! ${error}`));
       lines.push("");
       lines.push(
         color.dim(
-          `  ${symbol.bullet} Type the value  ${symbol.bullet} ${color.cyan("Enter")} to save  ${symbol.bullet} ${color.cyan("Tab")} for help  ${symbol.bullet} ${color.cyan("Ctrl+C")} to quit`
+          `  ${symbol.bullet} Type The Value  ${symbol.bullet} ${color.cyan("Enter")} To Save  ${symbol.bullet} ${color.cyan("Tab")} For Help  ${symbol.bullet} ${color.cyan("Ctrl+C")} To Quit`
         )
       );
-      if (showHelp && help) lines.push(helpPanel(help));
+      if (showHelp && help) lines.push(helpPanel(help, "Setup Help"));
       renderer.render(lines.join("\n") + "\n");
     };
 
@@ -66,9 +75,21 @@ export async function askText({ question, help = "", defaultValue = "", optional
       } else if (key.name === "return" || key.name === "enter") {
         const value = buffer.trim() || defaultValue;
         if (!value && !optional) {
-          // A required field cannot be left blank, so we keep prompting.
+          // A required field cannot be left blank, so we show that inline and
+          // keep the prompt open.
+          error = "This value is required.";
           draw();
           return;
+        }
+        if (validate) {
+          const message = validate(value);
+          if (message) {
+            // The value did not pass, so show why and keep the prompt open
+            // instead of committing a rejected line.
+            error = message;
+            draw();
+            return;
+          }
         }
         cleanup();
         finish(renderer, question, value, optional);
@@ -77,9 +98,11 @@ export async function askText({ question, help = "", defaultValue = "", optional
         return;
       } else if (key.name === "backspace") {
         buffer = buffer.slice(0, -1);
+        error = ""; // editing clears the previous error
       } else if (str && !key.ctrl && !key.meta && str >= " ") {
         // Append any ordinary printable character to the buffer.
         buffer += str;
+        error = ""; // editing clears the previous error
       }
 
       draw();
@@ -90,23 +113,15 @@ export async function askText({ question, help = "", defaultValue = "", optional
   });
 }
 
-function helpPanel(help) {
-  const top = color.gray(`  ┌ ${symbol.info} Setup help ${line("─", 42)}`);
-  const body = help
-    .split("\n")
-    .map((row) => color.gray("  │ ") + row)
-    .join("\n");
-  const bottom = color.gray(`  └${line("─", 55)}`);
-  return `${top}\n${body}\n${bottom}`;
-}
-
+// The completed line uses a blank marker so only the active prompt carries a
+// question mark, and a blank line follows to separate this completed section.
 function finish(renderer, question, value, optional) {
   renderer.clear();
   const shown = value
     ? color.cyan(maskIfSecret(question, value))
-    : color.gray("skipped");
+    : color.gray("Skipped");
   process.stdout.write(
-    `${color.green(symbol.success)} ${color.bold(question)} ${shown}\n`
+    `  ${color.bold(question)} ${shown}\n\n`
   );
   renderer.done();
 }

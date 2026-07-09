@@ -6,8 +6,14 @@
 import { run } from "../src/index.js";
 import { showCursor } from "../src/tui/keys.js";
 
-run().catch((error) => {
-  showCursor();
-  console.error("\n" + "Something went wrong:" + "\n" + (error?.stack ?? error));
-  process.exit(1);
-});
+run()
+  .then(() => {
+    // The interactive prompts leave standard input open, so we exit explicitly
+    // once the wizard is done. Without this the process would hang at the end.
+    process.exit(0);
+  })
+  .catch((error) => {
+    showCursor();
+    console.error("\n" + "Something went wrong:" + "\n" + (error?.stack ?? error));
+    process.exit(1);
+  });

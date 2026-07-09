@@ -11,7 +11,8 @@
 
 import { readKey, abort, hideCursor, showCursor } from "./keys.js";
 import { Renderer } from "./screen.js";
-import { color, symbol, line } from "./theme.js";
+import { color, symbol } from "./theme.js";
+import { helpPanel } from "./helpPanel.js";
 
 // question is the prompt text. label is the single checkbox item label.
 // help is the contextual guidance shown when the help panel is toggled open.
@@ -38,7 +39,7 @@ export async function confirmCheckbox({ question, label, help = "", initialCheck
     lines.push(footerHint(confirmed, checked));
 
     if (showHelp && help) {
-      lines.push(helpPanel(help));
+      lines.push(helpPanel(help, "Help"));
     }
 
     renderer.render(lines.join("\n") + "\n");
@@ -80,29 +81,21 @@ export async function confirmCheckbox({ question, label, help = "", initialCheck
 // stage so the two Enter presses are always clearly explained.
 function footerHint(confirmed, checked) {
   const stage = confirmed
-    ? `${color.cyan("Enter")} to confirm`
-    : `${color.cyan("Enter")} to select`;
-  const state = checked ? color.green("included") : color.gray("skipped");
+    ? `${color.cyan("Enter")} To Confirm`
+    : `${color.cyan("Enter")} To Select`;
+  const state = checked ? color.green("Included") : color.gray("Skipped");
   return color.dim(
-    `  ${symbol.bullet} ${color.cyan("Space")} to toggle (${state})  ${symbol.bullet} ${stage}  ${symbol.bullet} ${color.cyan("h")} for help  ${symbol.bullet} ${color.cyan("Ctrl+C")} to quit`
+    `  ${symbol.bullet} ${color.cyan("Space")} To Toggle (${state})  ${symbol.bullet} ${stage}  ${symbol.bullet} ${color.cyan("h")} For Help  ${symbol.bullet} ${color.cyan("Ctrl+C")} To Quit`
   );
 }
 
-function helpPanel(help) {
-  const top = color.gray(`  ┌ ${symbol.info} Help ${line("─", 48)}`);
-  const body = help
-    .split("\n")
-    .map((row) => color.gray("  │ ") + row)
-    .join("\n");
-  const bottom = color.gray(`  └${line("─", 55)}`);
-  return `${top}\n${body}\n${bottom}`;
-}
-
+// The completed line uses a blank marker so only the active prompt carries a
+// question mark, and a blank line follows to separate this completed section.
 function finish(renderer, question, checked) {
   renderer.clear();
   const answer = checked ? color.green("Included") : color.gray("Skipped");
   process.stdout.write(
-    `${color.green(symbol.success)} ${color.bold(question)} ${answer}\n`
+    `  ${color.bold(question)} ${answer}\n\n`
   );
   renderer.done();
 }

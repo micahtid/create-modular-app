@@ -5,7 +5,8 @@
 
 import { readKey, abort, hideCursor, showCursor } from "./keys.js";
 import { Renderer } from "./screen.js";
-import { color, symbol, line } from "./theme.js";
+import { color, symbol } from "./theme.js";
+import { helpPanel } from "./helpPanel.js";
 
 // options is an array of objects shaped like { label, value }.
 // help is an optional string shown when the user toggles the help panel.
@@ -37,7 +38,7 @@ export async function selectOne({ question, options, help = "", initialIndex = 0
     lines.push(footerHint(confirmed));
 
     if (showHelp && help) {
-      lines.push(helpPanel(help));
+      lines.push(helpPanel(help, "Help"));
     }
 
     renderer.render(lines.join("\n") + "\n");
@@ -82,30 +83,20 @@ export async function selectOne({ question, options, help = "", initialIndex = 0
 // the user always knows which of the two Enter presses they are on.
 function footerHint(confirmed) {
   const keys = confirmed
-    ? `${color.cyan("Enter")} to confirm`
-    : `${color.cyan("Enter")} to select`;
+    ? `${color.cyan("Enter")} To Confirm`
+    : `${color.cyan("Enter")} To Select`;
   return color.dim(
-    `  ${symbol.bullet} Use ${color.cyan("↑ ↓")} to move  ${symbol.bullet} ${keys}  ${symbol.bullet} ${color.cyan("h")} for help  ${symbol.bullet} ${color.cyan("Ctrl+C")} to quit`
+    `  ${symbol.bullet} Use ${color.cyan("↑ ↓")} To Move  ${symbol.bullet} ${keys}  ${symbol.bullet} ${color.cyan("h")} For Help  ${symbol.bullet} ${color.cyan("Ctrl+C")} To Quit`
   );
 }
 
-// A framed panel that presents the deeper setup guidance for the current step.
-function helpPanel(help) {
-  const top = color.gray(`  ┌ ${symbol.info} Help ${line("─", 48)}`);
-  const body = help
-    .split("\n")
-    .map((row) => color.gray("  │ ") + row)
-    .join("\n");
-  const bottom = color.gray(`  └${line("─", 55)}`);
-  return `${top}\n${body}\n${bottom}`;
-}
-
-// Once confirmed we redraw a compact single line summary of the answer so the
-// finished transcript reads like a clean checklist.
+// Once confirmed we redraw a compact single line summary of the answer. The
+// leading marker is left blank so only the active prompt carries a question
+// mark, and a blank line follows to separate this completed section.
 function finish(renderer, question, label) {
   renderer.clear();
   process.stdout.write(
-    `${color.green(symbol.success)} ${color.bold(question)} ${color.cyan(label)}\n`
+    `  ${color.bold(question)} ${color.cyan(label)}\n\n`
   );
   renderer.done();
 }
