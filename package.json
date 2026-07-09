@@ -1,0 +1,29 @@
+{
+  "name": "create-modular-app",
+  "version": "1.0.0",
+  "description": "A terminal user interface that generates production ready Web or Mobile boilerplate with Convex, Google OAuth, and payments.",
+  "type": "module",
+  "bin": {
+    "create-modular-app": "bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "src"
+  ],
+  "scripts": {
+    "start": "node bin/cli.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "boilerplate",
+    "generator",
+    "tui",
+    "cli",
+    "nextjs",
+    "expo",
+    "convex"
+  ],
+  "license": "MIT"
+}
