@@ -5,11 +5,11 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { selectOne } from "./tui/select.js";
-import { confirmCheckbox } from "./tui/checkbox.js";
-import { askText } from "./tui/textInput.js";
-import { showCursor } from "./tui/keys.js";
-import { color, symbol, line } from "./tui/theme.js";
+import { selectOne } from "./ui/select.js";
+import { confirmCheckbox } from "./ui/checkbox.js";
+import { askText } from "./ui/textInput.js";
+import { showCursor } from "./ui/keys.js";
+import { color, symbol, line } from "./ui/theme.js";
 import { platformHelp, featureHelp } from "./content/help.js";
 import { buildEnvPlan } from "./content/envConfig.js";
 import { generateProject } from "./generator.js";

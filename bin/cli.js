@@ -4,7 +4,7 @@
 // sure the terminal cursor is restored if anything goes wrong along the way
 
 import { run } from "../src/index.js";
-import { showCursor } from "../src/tui/keys.js";
+import { showCursor } from "../src/ui/keys.js";
 
 run()
   .then(() => {
