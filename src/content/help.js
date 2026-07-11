@@ -1,9 +1,9 @@
 // This module holds the contextual help text shown when the user toggles the
-// help panel during selection and during environment configuration. Every entry
+// help panel during selection and during environment configuration, every entry
 // points at the exact documentation source listed in the product requirements
-// so the guidance stays aligned with the official setup steps.
+// so the guidance stays aligned with the official setup steps
 
-// Help shown while choosing the target platform.
+// Help shown while choosing the target platform
 export const platformHelp = [
   "Web builds a Next.js App Router project styled with TailwindCSS.",
   "Mobile builds an Expo and React Native project.",
@@ -11,7 +11,7 @@ export const platformHelp = [
   "Stripe for Web, or RevenueCat for Mobile.",
 ].join("\n");
 
-// Help shown while deciding whether to include each feature module.
+// Help shown while deciding whether to include each feature module
 export const featureHelp = {
   convex: [
     "Convex is the database and backend for the generated app.",
@@ -44,8 +44,8 @@ export const featureHelp = {
   ].join("\n"),
 };
 
-// Help shown next to each environment configuration prompt. These explain,
-// in plain steps, where each credential comes from.
+// Help shown next to each environment configuration prompt, these explain,
+// in plain steps, where each credential comes from
 export const envHelp = {
   convexDeployment: [
     "Run the Convex development server to create a deployment:",

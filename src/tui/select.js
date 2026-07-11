@@ -1,15 +1,15 @@
 // This module implements the single choice list prompt used for picking the
-// target platform. It follows the double enter model from the product
-// requirements. The first Enter locks in the highlighted choice and shows a
-// confirmation hint. The second Enter confirms it and advances the flow.
+// target platform, it follows the double enter model from the product
+// requirements, the first Enter locks in the highlighted choice and shows a
+// confirmation hint, the second Enter confirms it and advances the flow
 
 import { readKey, abort, hideCursor, showCursor } from "./keys.js";
 import { Renderer } from "./screen.js";
 import { color, symbol } from "./theme.js";
 import { helpPanel } from "./helpPanel.js";
 
-// options is an array of objects shaped like { label, value }.
-// help is an optional string shown when the user toggles the help panel.
+// options is an array of objects shaped like { label, value }
+// help is an optional string shown when the user toggles the help panel
 export async function selectOne({ question, options, help = "", initialIndex = 0 }) {
   const renderer = new Renderer();
   let cursor = initialIndex; // which row is highlighted and therefore selected
@@ -22,8 +22,8 @@ export async function selectOne({ question, options, help = "", initialIndex = 0
     const lines = [];
     lines.push(`${color.green(symbol.question)} ${color.bold(question)}`);
 
-    // Render each option row. The highlighted row shows a pointer and a filled
-    // checkbox because for a single choice the selection follows the cursor.
+    // Render each option row, the highlighted row shows a pointer and a filled
+    // checkbox because for a single choice the selection follows the cursor
     options.forEach((option, index) => {
       const active = index === cursor;
       const pointer = active ? color.cyan(symbol.pointer) : " ";
@@ -46,7 +46,7 @@ export async function selectOne({ question, options, help = "", initialIndex = 0
 
   draw();
 
-  // The main input loop. It keeps reading keys until the choice is confirmed.
+  // The main input loop, it keeps reading keys until the choice is confirmed
   while (true) {
     const key = await readKey();
 
@@ -63,10 +63,10 @@ export async function selectOne({ question, options, help = "", initialIndex = 0
       confirmed = false;
     } else if (key.name === "enter") {
       if (!confirmed) {
-        // First Enter locks in the currently highlighted choice.
+        // First Enter locks in the currently highlighted choice
         confirmed = true;
       } else {
-        // Second Enter confirms the choice and ends the prompt.
+        // Second Enter confirms the choice and ends the prompt
         finish(renderer, question, options[cursor].label);
         showCursor();
         return options[cursor].value;
@@ -80,7 +80,7 @@ export async function selectOne({ question, options, help = "", initialIndex = 0
 }
 
 // The footer changes wording depending on whether the choice is locked yet, so
-// the user always knows which of the two Enter presses they are on.
+// the user always knows which of the two Enter presses they are on
 function footerHint(confirmed) {
   const keys = confirmed
     ? `${color.cyan("Enter")} To Confirm`
@@ -90,9 +90,9 @@ function footerHint(confirmed) {
   );
 }
 
-// Once confirmed we redraw a compact single line summary of the answer. The
+// Once confirmed we redraw a compact single line summary of the answer, the
 // leading marker is left blank so only the active prompt carries a question
-// mark, and a blank line follows to separate this completed section.
+// mark, and a blank line follows to separate this completed section
 function finish(renderer, question, label) {
   renderer.clear();
   process.stdout.write(

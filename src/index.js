@@ -1,7 +1,7 @@
-// This is the orchestrator for the whole wizard. It runs the sequential,
+// This is the orchestrator for the whole wizard, it runs the sequential,
 // dependency aware flow described in the product requirements, collects the
 // environment values in the same order the features were accepted, generates the
-// project, and prints clear next steps.
+// project, and prints clear next steps
 
 import fs from "node:fs";
 import path from "node:path";
@@ -17,12 +17,12 @@ import { generateProject } from "./generator.js";
 export async function run() {
   banner();
 
-  // The project name doubles as the output folder name.
+  // The project name doubles as the output folder name
   const appName = await askProjectName();
   const targetDir = path.resolve(process.cwd(), appName);
   await ensureEmptyTarget(targetDir, appName);
 
-  // Step 1: choose the target platform.
+  // Step 1: choose the target platform
   const platform = await selectOne({
     question: "Select Target Platform",
     help: platformHelp,
@@ -33,7 +33,7 @@ export async function run() {
     initialIndex: 0,
   });
 
-  // Step 2: sequential, dependency aware feature selection.
+  // Step 2: sequential, dependency aware feature selection
   const modules = { convex: false, googleOAuth: false, payments: false };
 
   modules.convex = await confirmCheckbox({
@@ -43,7 +43,7 @@ export async function run() {
   });
 
   // Google OAuth and payments both depend on Convex, so they are only offered
-  // when Convex was accepted.
+  // when Convex was accepted
   if (modules.convex) {
     modules.googleOAuth = await confirmCheckbox({
       question: "Include Google OAuth via Convex Auth?",
@@ -65,7 +65,7 @@ export async function run() {
       });
     }
   } else {
-    // When Convex is skipped we tell the user why the remaining steps are gone.
+    // When Convex is skipped we tell the user why the remaining steps are gone
     console.log(
       color.dim(
         `  ${symbol.info}  Convex was skipped, so authentication and payments are not available.`
@@ -73,12 +73,12 @@ export async function run() {
     );
   }
 
-  // Step 4: collect environment values in acceptance order. This happens before
-  // generation so the values can be written straight into the project.
+  // Step 4: collect environment values in acceptance order, this happens before
+  // generation so the values can be written straight into the project
   const envPlan = buildEnvPlan({ platform, ...modules });
   const envValues = await collectEnv(envPlan);
 
-  // Step 3: generate the project files.
+  // Step 3: generate the project files
   generationBanner();
   const { written } = generateProject({
     platform,
@@ -92,7 +92,7 @@ export async function run() {
   summary({ appName, platform, modules, written, envPlan, envValues });
 }
 
-// Prints the header banner shown when the tool starts.
+// Prints the header banner shown when the tool starts
 function banner() {
   console.log("");
   console.log(color.cyan(`  ${line("─", 52)}`));
@@ -101,15 +101,15 @@ function banner() {
   console.log("");
 }
 
-// Prints the banner shown just before files are written.
+// Prints the banner shown just before files are written
 function generationBanner() {
   console.log("");
   console.log(color.magenta(`  ${symbol.bullet} Generating Your Project...`));
   console.log("");
 }
 
-// Asks for the project name. The name is validated live inside the prompt, so an
-// invalid entry is rejected in place and never leaves a rejected line behind.
+// Asks for the project name, the name is validated live inside the prompt, so an
+// invalid entry is rejected in place and never leaves a rejected line behind
 async function askProjectName() {
   return askText({
     question: "Project Name",
@@ -123,7 +123,7 @@ async function askProjectName() {
 }
 
 // Refuses to write into a folder that already has files, so nothing is
-// overwritten by accident.
+// overwritten by accident
 async function ensureEmptyTarget(targetDir, appName) {
   if (fs.existsSync(targetDir) && fs.readdirSync(targetDir).length > 0) {
     console.log(
@@ -137,9 +137,9 @@ async function ensureEmptyTarget(targetDir, appName) {
   }
 }
 
-// Walks the environment plan in order, showing a help toggle for each prompt.
+// Walks the environment plan in order, showing a help toggle for each prompt
 // Every value is optional so the user can skip any credential and fill it in
-// later. Skipped values are recorded as blank.
+// later, skipped values are recorded as blank
 async function collectEnv(envPlan) {
   const values = {};
   if (envPlan.length === 0) return values;
@@ -164,7 +164,7 @@ async function collectEnv(envPlan) {
   return values;
 }
 
-// Prints the closing summary with the file count and the exact next steps.
+// Prints the closing summary with the file count and the exact next steps
 function summary({ appName, platform, modules, written, envPlan, envValues }) {
   console.log("");
   console.log(color.green(`  ${symbol.success} Created ${written.length} Files In ${color.bold(appName)}/`));
@@ -176,7 +176,7 @@ function summary({ appName, platform, modules, written, envPlan, envValues }) {
   console.log(`  ${color.bold("Modules ")}  ${featureLine}`);
   console.log("");
 
-  // If any secrets were left blank, remind the user where to fill them.
+  // If any secrets were left blank, remind the user where to fill them
   const blanks = envPlan.filter((item) => !envValues[item.key]);
   if (blanks.length > 0) {
     console.log(color.yellow(`  ${symbol.info}  You skipped ${blanks.length} value(s). Fill them into .env.local or scripts/set-convex-env before running.`));

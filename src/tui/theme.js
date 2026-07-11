@@ -1,13 +1,13 @@
 // This module centralizes every color, symbol, and small formatting helper the
-// terminal user interface uses. Keeping the ANSI escape codes in one place means
-// the rest of the code can read as plain English instead of raw escape sequences.
+// terminal user interface uses, keeping the ANSI escape codes in one place means
+// the rest of the code can read as plain English instead of raw escape sequences
 
 // Color output is disabled automatically when the output is not an interactive
-// terminal, for example when the tool is piped into a file.
+// terminal, for example when the tool is piped into a file
 const colorEnabled = process.stdout.isTTY && !process.env.NO_COLOR;
 
-// This helper wraps a string in an ANSI color code and then resets the color.
-// When colors are disabled it simply returns the original string untouched.
+// This helper wraps a string in an ANSI color code and then resets the color
+// When colors are disabled it simply returns the original string untouched
 function paint(open, close) {
   return (text) => (colorEnabled ? `${open}${text}${close}` : text);
 }
@@ -24,9 +24,9 @@ export const color = {
   magenta: paint("\x1b[35m", "\x1b[39m"),
 };
 
-// These are the visual symbols shown next to prompts and options. They mirror
+// These are the visual symbols shown next to prompts and options, they mirror
 // the look described in the product requirements, for example the checkbox
-// brackets and the pointer arrow.
+// brackets and the pointer arrow
 export const symbol = {
   pointer: "❯", // a right facing arrow used to mark the highlighted row
   checked: "X",
@@ -37,7 +37,7 @@ export const symbol = {
   bullet: "•",
 };
 
-// Small helpers used to draw the framed help panels and the header banner.
+// Small helpers used to draw the framed help panels and the header banner
 export function line(char = "─", width = 60) {
   return char.repeat(width);
 }

@@ -1,6 +1,6 @@
 // This module takes the selections and collected credentials and turns them into
-// real files on disk. It builds the project file tree from the template modules,
-// writes every file, and then writes the environment files and helper scripts.
+// real files on disk, it builds the project file tree from the template modules,
+// writes every file, and then writes the environment files and helper scripts
 
 import fs from "node:fs";
 import path from "node:path";
@@ -20,14 +20,14 @@ export function generateProject(config) {
     payments: modules.payments,
   };
 
-  // Pick the right template builder for the chosen platform.
+  // Pick the right template builder for the chosen platform
   const files =
     platform === "web" ? buildWebProject(options) : buildMobileProject(options);
 
-  // Add the environment files and the Convex secret helper scripts.
+  // Add the environment files and the Convex secret helper scripts
   Object.assign(files, buildEnvFiles(config));
 
-  // Write every file, creating parent folders as needed.
+  // Write every file, creating parent folders as needed
   const written = [];
   for (const [relativePath, content] of Object.entries(files)) {
     const fullPath = path.join(targetDir, relativePath);
@@ -39,10 +39,10 @@ export function generateProject(config) {
   return { written: written.sort() };
 }
 
-// Builds the environment related files. Client values go into .env.local so the
-// app can read them. Server side secrets go into helper scripts that push them
+// Builds the environment related files, client values go into .env.local so the
+// app can read them, server side secrets go into helper scripts that push them
 // into the Convex deployment environment, because those secrets must never live
-// in the client bundle.
+// in the client bundle
 function buildEnvFiles(config) {
   const files = {};
   const { envPlan, envValues } = config;
@@ -50,7 +50,7 @@ function buildEnvFiles(config) {
   const clientEntries = envPlan.filter((item) => item.target === "client");
   const convexEntries = envPlan.filter((item) => item.target === "convex");
 
-  // The local env file holds only the public, client readable values.
+  // The local env file holds only the public, client readable values
   if (clientEntries.length > 0) {
     const lines = [
       "# Public values read by the app at build time.",
@@ -64,7 +64,7 @@ function buildEnvFiles(config) {
   }
 
   // An example file documents every variable without real values, so a new
-  // teammate knows what to fill in.
+  // teammate knows what to fill in
   const exampleLines = ["# Copy this file to .env.local and fill in real values.", ""];
   for (const item of envPlan) {
     const where = item.target === "convex" ? " (set in the Convex deployment)" : "";
@@ -74,7 +74,7 @@ function buildEnvFiles(config) {
   }
   files[".env.example"] = exampleLines.join("\n") + "\n";
 
-  // The helper scripts push the server side secrets into Convex with one command.
+  // The helper scripts push the server side secrets into Convex with one command
   if (convexEntries.length > 0) {
     files["scripts/set-convex-env.sh"] = convexEnvShellScript(convexEntries, envValues);
     files["scripts/set-convex-env.ps1"] = convexEnvPowershellScript(convexEntries, envValues);
